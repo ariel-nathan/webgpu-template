@@ -1,0 +1,25 @@
+{
+  "name": "webgpu-template",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "precommit": "pnpm lefthook install"
+  },
+  "dependencies": {
+    "stats.js": "^0.17.0",
+    "tweakpane": "^4.0.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@tweakpane/core": "^2.0.5",
+    "@types/stats.js": "^0.17.3",
+    "@webgpu/types": "^0.1.52",
+    "lefthook": "^1.10.1",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.7"
+  }
+}

@@ -1,0 +1,16 @@
+html,
+body {
+  margin: 0;
+  height: 100vh;
+}
+
+#app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+#canvas {
+  border: 1px solid black;
+}
