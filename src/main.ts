@@ -20,17 +20,20 @@ const module = device.createShaderModule({
   code,
 })
 
+const canvas = context.canvas
+const aspect = canvas.width / canvas.height
+
 // biome-ignore format: debug
 const vertexData = new Float32Array([
   // pos(x, y) color(r, g, b, a)
   // triangle 1
-  -0.4,  0.5,   1.0, 0.0, 0.0, 1.0, // top left
-  -0.4, -0.5,   0.0, 1.0, 0.0, 1.0, // bottom left
-   0.4, -0.5,   0.0, 0.0, 1.0, 1.0, // bottom right
+  -0.5 / aspect,  0.5,   1.0, 0.0, 0.0, 1.0, // top left
+  -0.5 / aspect, -0.5,   0.0, 1.0, 0.0, 1.0, // bottom left
+   0.5 / aspect, -0.5,   0.0, 0.0, 1.0, 1.0, // bottom right
   // triangle 2
-   0.4,  0.5,   1.0, 0.0, 0.0, 1.0, // top right
-  -0.4,  0.5,   1.0, 0.0, 0.0, 1.0, // top left
-   0.4, -0.5,   0.0, 0.0, 1.0, 1.0, // bottom right
+   0.5 / aspect,  0.5,   1.0, 0.0, 0.0, 1.0, // top right
+  -0.5 / aspect,  0.5,   1.0, 0.0, 0.0, 1.0, // top left
+   0.5 / aspect, -0.5,   0.0, 0.0, 1.0, 1.0, // bottom right
 ])
 
 const vertexBuffer = webgpu.createBuffer("vertex buffer", vertexData)
