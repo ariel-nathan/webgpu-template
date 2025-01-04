@@ -1,3 +1,4 @@
+import { Camera } from "./lib/camera"
 import { Debug } from "./lib/debug"
 import { WebGPU } from "./lib/webgpu"
 import code from "./shader.wgsl?raw"
@@ -5,9 +6,40 @@ import "./style.css"
 
 const webgpu = new WebGPU()
 await webgpu.init()
-const { context, device, format } = webgpu
+const { context, device, format, canvas } = webgpu
 
-const debug = new Debug(true)
+const camera = new Camera()
+camera.updateProjection(canvas.width / canvas.height)
+
+let isMouseDown = false
+let lastMouseX = 0
+let lastMouseY = 0
+
+canvas.addEventListener("mousedown", (e) => {
+  isMouseDown = true
+  lastMouseX = e.clientX
+  lastMouseY = e.clientY
+})
+
+canvas.addEventListener("mouseup", () => {
+  isMouseDown = false
+})
+
+canvas.addEventListener("mousemove", (e) => {
+  if (!isMouseDown) return
+  const deltaX = e.clientX - lastMouseX
+  const deltaY = e.clientY - lastMouseY
+  camera.orbit(deltaX, deltaY)
+  lastMouseX = e.clientX
+  lastMouseY = e.clientY
+})
+
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault()
+  camera.zoom(e.deltaY)
+})
+
+const debug = new Debug(true, camera)
 debug.init()
 
 context.configure({
@@ -20,43 +52,99 @@ const module = device.createShaderModule({
   code,
 })
 
-const canvas = context.canvas
-const aspect = canvas.width / canvas.height
-
 // biome-ignore format: debug
 const vertexData = new Float32Array([
-  // pos(x, y) color(r, g, b, a)
-  // triangle 1
-  -0.5 / aspect,  0.5,   1.0, 0.0, 0.0, 1.0, // top left
-  -0.5 / aspect, -0.5,   0.0, 1.0, 0.0, 1.0, // bottom left
-   0.5 / aspect, -0.5,   0.0, 0.0, 1.0, 1.0, // bottom right
-  // triangle 2
-   0.5 / aspect,  0.5,   1.0, 0.0, 0.0, 1.0, // top right
-  -0.5 / aspect,  0.5,   1.0, 0.0, 0.0, 1.0, // top left
-   0.5 / aspect, -0.5,   0.0, 0.0, 1.0, 1.0, // bottom right
+  // pos(x, y, z)    color(r, g, b, a)
+  // Front face (red)
+  -0.5, -0.5,  0.5,   1.0, 0.0, 0.0, 1.0,
+   0.5, -0.5,  0.5,   1.0, 0.0, 0.0, 1.0,
+   0.5,  0.5,  0.5,   1.0, 0.0, 0.0, 1.0,
+  -0.5, -0.5,  0.5,   1.0, 0.0, 0.0, 1.0,
+   0.5,  0.5,  0.5,   1.0, 0.0, 0.0, 1.0,
+  -0.5,  0.5,  0.5,   1.0, 0.0, 0.0, 1.0,
+
+  // Back face (green)
+  -0.5, -0.5, -0.5,   0.0, 1.0, 0.0, 1.0,
+  -0.5,  0.5, -0.5,   0.0, 1.0, 0.0, 1.0,
+   0.5,  0.5, -0.5,   0.0, 1.0, 0.0, 1.0,
+  -0.5, -0.5, -0.5,   0.0, 1.0, 0.0, 1.0,
+   0.5,  0.5, -0.5,   0.0, 1.0, 0.0, 1.0,
+   0.5, -0.5, -0.5,   0.0, 1.0, 0.0, 1.0,
+
+  // Top face (blue)
+  -0.5,  0.5, -0.5,   0.0, 0.0, 1.0, 1.0,
+  -0.5,  0.5,  0.5,   0.0, 0.0, 1.0, 1.0,
+   0.5,  0.5,  0.5,   0.0, 0.0, 1.0, 1.0,
+  -0.5,  0.5, -0.5,   0.0, 0.0, 1.0, 1.0,
+   0.5,  0.5,  0.5,   0.0, 0.0, 1.0, 1.0,
+   0.5,  0.5, -0.5,   0.0, 0.0, 1.0, 1.0,
+
+  // Bottom face (yellow)
+  -0.5, -0.5, -0.5,   1.0, 1.0, 0.0, 1.0,
+   0.5, -0.5, -0.5,   1.0, 1.0, 0.0, 1.0,
+   0.5, -0.5,  0.5,   1.0, 1.0, 0.0, 1.0,
+  -0.5, -0.5, -0.5,   1.0, 1.0, 0.0, 1.0,
+   0.5, -0.5,  0.5,   1.0, 1.0, 0.0, 1.0,
+  -0.5, -0.5,  0.5,   1.0, 1.0, 0.0, 1.0,
+
+  // Right face (magenta)
+   0.5, -0.5, -0.5,   1.0, 0.0, 1.0, 1.0,
+   0.5,  0.5, -0.5,   1.0, 0.0, 1.0, 1.0,
+   0.5,  0.5,  0.5,   1.0, 0.0, 1.0, 1.0,
+   0.5, -0.5, -0.5,   1.0, 0.0, 1.0, 1.0,
+   0.5,  0.5,  0.5,   1.0, 0.0, 1.0, 1.0,
+   0.5, -0.5,  0.5,   1.0, 0.0, 1.0, 1.0,
+
+  // Left face (cyan)
+  -0.5, -0.5, -0.5,   0.0, 1.0, 1.0, 1.0,
+  -0.5, -0.5,  0.5,   0.0, 1.0, 1.0, 1.0,
+  -0.5,  0.5,  0.5,   0.0, 1.0, 1.0, 1.0,
+  -0.5, -0.5, -0.5,   0.0, 1.0, 1.0, 1.0,
+  -0.5,  0.5,  0.5,   0.0, 1.0, 1.0, 1.0,
+  -0.5,  0.5, -0.5,   0.0, 1.0, 1.0, 1.0,
 ])
 
 const vertexBuffer = webgpu.createBuffer("vertex buffer", vertexData)
 
+const cameraUniformBuffer = device.createBuffer({
+  label: "camera uniform buffer",
+  size: 2 * 4 * 16, // 2 mat4s (view and projection)
+  usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+})
+
 const pipeline = device.createRenderPipeline({
   label: "pipeline",
-  layout: "auto",
+  layout: device.createPipelineLayout({
+    label: "pipeline layout",
+    bindGroupLayouts: [
+      device.createBindGroupLayout({
+        label: "camera bind group layout",
+        entries: [
+          {
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: { type: "uniform" },
+          },
+        ],
+      }),
+    ],
+  }),
   vertex: {
     module,
     buffers: [
       {
-        arrayStride: 6 * Float32Array.BYTES_PER_ELEMENT, // x,y + r,g,b,a = 6 floats total per vertex
+        arrayStride: 7 * Float32Array.BYTES_PER_ELEMENT, // x,y,z + r,g,b,a = 7 floats
         attributes: [
           {
             // position attribute
             shaderLocation: 0,
             offset: 0,
-            format: "float32x2",
+            format: "float32x3",
           },
           {
             // color attribute
             shaderLocation: 1,
-            offset: 2 * Float32Array.BYTES_PER_ELEMENT, // offset by 2 floats (after position)
+            offset: 3 * Float32Array.BYTES_PER_ELEMENT, // offset by 3 floats for x,y,z
             format: "float32x4",
           },
         ],
@@ -73,15 +161,44 @@ const pipeline = device.createRenderPipeline({
   },
   primitive: {
     topology: "triangle-list",
+    cullMode: "back",
   },
+  depthStencil: {
+    depthWriteEnabled: true,
+    depthCompare: "less",
+    format: "depth24plus",
+  },
+})
+
+// Create bind group for camera uniforms
+const cameraBindGroup = device.createBindGroup({
+  label: "camera bind group",
+  layout: pipeline.getBindGroupLayout(0),
+  entries: [
+    {
+      binding: 0,
+      resource: { buffer: cameraUniformBuffer },
+    },
+  ],
 })
 
 function draw() {
   const commandEncoder = device.createCommandEncoder({
     label: "command encoder",
   })
+
   const view = context.getCurrentTexture().createView({
     label: "view",
+  })
+
+  const depthTexture = device.createTexture({
+    size: [context.canvas.width, context.canvas.height],
+    format: "depth24plus",
+    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+  })
+
+  const depthView = depthTexture.createView({
+    label: "depth view",
   })
 
   const passEncoder = commandEncoder.beginRenderPass({
@@ -94,14 +211,30 @@ function draw() {
         storeOp: "store",
       },
     ],
+    depthStencilAttachment: {
+      view: depthView,
+      depthClearValue: 1.0,
+      depthLoadOp: "clear",
+      depthStoreOp: "store",
+    },
   })
+
+  // Update camera uniforms
+  const uniformData = new Float32Array(32) // 2 mat4s = 32 floats
+  uniformData.set(camera.getViewMatrix() as Float32Array, 0)
+  uniformData.set(camera.getProjectionMatrix() as Float32Array, 16)
+  device.queue.writeBuffer(cameraUniformBuffer, 0, uniformData)
 
   passEncoder.setPipeline(pipeline)
   passEncoder.setVertexBuffer(0, vertexBuffer)
-  passEncoder.draw(6)
+  passEncoder.setBindGroup(0, cameraBindGroup)
+  passEncoder.draw(36) // 6 faces * 2 triangles * 3 vertices = 36 vertices
   passEncoder.end()
 
   device.queue.submit([commandEncoder.finish()])
+
+  // Clean up
+  depthTexture.destroy()
 }
 
 function animate() {

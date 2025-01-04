@@ -1,27 +1,27 @@
-struct VertexIn {
-  @builtin(vertex_index) vertexIndex: u32,
-  @location(0) position: vec2<f32>,
-  @location(1) color: vec4<f32>,
+struct CameraUniforms {
+    viewMatrix: mat4x4f,
+    projectionMatrix: mat4x4f,
 }
 
-struct VertexOut {
-  @builtin(position) position: vec4f,
-  @location(0) color: vec4f,
-}
+@binding(0) @group(0) var<uniform> camera: CameraUniforms;
+
+struct VertexOutput {
+    @builtin(position) position: vec4f,
+    @location(0) color: vec4f,
+};
 
 @vertex
-fn vertex(
-  input: VertexIn
-) -> VertexOut {
-  var out: VertexOut;
-  out.position = vec4(input.position, 0.0, 1.0);
-  out.color = input.color;
-  return out;
+fn vertexMain(
+    @location(0) position: vec3f,
+    @location(1) color: vec4f
+) -> VertexOutput {
+    var output: VertexOutput;
+    output.position = camera.projectionMatrix * camera.viewMatrix * vec4f(position, 1.0);
+    output.color = color;
+    return output;
 }
 
 @fragment
-fn fragment(
-  input: VertexOut
-) -> @location(0) vec4<f32> {
-  return input.color;
+fn fragmentMain(@location(0) color: vec4f) -> @location(0) vec4f {
+    return color;
 }

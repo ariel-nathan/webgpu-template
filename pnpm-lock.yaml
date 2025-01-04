@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      gl-matrix:
+        specifier: ^3.4.3
+        version: 3.4.3
       stats.js:
         specifier: ^0.17.0
         version: 0.17.0
@@ -359,6 +362,9 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
+  gl-matrix@3.4.3:
+    resolution: {integrity: sha512-wcCp8vu8FT22BnvKVPjXa/ICBWRq/zjFfdofZy1WSpQZpphblv12/bOQLBC1rMM7SGOFS9ltVmKOHil5+Ml7gA==}
+
   lefthook-darwin-arm64@1.10.1:
     resolution: {integrity: sha512-dGi4Oiu2LSve8Xmz7vHWlUbnU5mk6HnhTbC1CnXqaFbb08yNYSYoJBwsalS+LoO4L6I/pqnv32ESCbdIzuhBiQ==}
     cpu: [arm64]
@@ -692,6 +698,8 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
+
+  gl-matrix@3.4.3: {}
 
   lefthook-darwin-arm64@1.10.1:
     optional: true

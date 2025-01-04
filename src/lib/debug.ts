@@ -1,22 +1,29 @@
 import Stats from "stats.js"
 import { Pane } from "tweakpane"
+import type { Camera } from "./camera"
 
 export type DebugParams = {
-  level: number
-  name: string
-  active: boolean
+  camera: {
+    position: {
+      x: number
+      y: number
+      z: number
+    }
+  }
 }
 
 export class Debug {
   private stats?: Stats
   private pane?: Pane
   private params?: DebugParams
+  private camera?: Camera
 
-  constructor(debug: boolean) {
+  constructor(debug: boolean, camera: Camera) {
     if (!debug) return
 
+    this.camera = camera
     this.stats = new Stats()
-    this.stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
+    this.stats.showPanel(0)
     this.stats.dom.style.top = "8px"
     this.stats.dom.style.left = "8px"
 
@@ -24,24 +31,48 @@ export class Debug {
       title: "Debug",
     })
 
+    const position = camera.getPosition()
+
     this.params = {
-      level: 0,
-      name: "Test",
-      active: true,
+      camera: {
+        position: {
+          x: position[0],
+          y: position[1],
+          z: position[2],
+        },
+      },
     }
+  }
+
+  public updateCameraPosition() {
+    if (!this.params || !this.pane || !this.camera) return
+    const position = this.camera.getPosition()
+    this.params.camera.position.x = position[0]
+    this.params.camera.position.y = position[1]
+    this.params.camera.position.z = position[2]
+
+    // Force refresh the entire pane
+    this.pane.refresh()
   }
 
   public init() {
     if (!this.stats || !this.pane || !this.params) return
     document.body.appendChild(this.stats.dom)
-    this.pane.addBinding(this.params, "level", { min: 0, max: 100 })
-    this.pane.addBinding(this.params, "name")
-    this.pane.addBinding(this.params, "active")
+
+    // Create a folder for camera controls
+    const cameraFolder = this.pane.addFolder({
+      title: "Camera",
+    })
+
+    cameraFolder.addBinding(this.params.camera, "position", {
+      disabled: true,
+    })
   }
 
   public begin() {
     if (!this.stats) return
     this.stats.begin()
+    this.updateCameraPosition()
   }
 
   public end() {
