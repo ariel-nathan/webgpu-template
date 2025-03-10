@@ -1,5 +1,4 @@
 {
-  "files.eol": "\n",
   "prettier.enable": false,
   "eslint.enable": false,
   "editor.defaultFormatter": "biomejs.biome",
